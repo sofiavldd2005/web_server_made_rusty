@@ -5,7 +5,7 @@ use std::{
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    sender: Option<mpsc::Sender<Job>>,
 }
 
 #[derive(Debug)]
@@ -14,6 +14,11 @@ pub enum PoolCreationError {
     NotANumber, // Usually handled during string-to-int parsing
 }
 
+///The Worker picks up code that needs to be run and runs the code in its thread.
+struct Worker {
+    id: usize,
+    thread: thread::JoinHandle<()>,
+}
 ///Type alias for a trait objetc that holds the type of closure that execute receives
 type Job = Box<dyn FnOnce() + Send + 'static>;
 
@@ -38,9 +43,13 @@ impl ThreadPool {
         }
 
         // 3. Return the struct
-        Ok(ThreadPool { workers, sender })
+        Ok(ThreadPool {
+            workers,
+            sender: Some(sender),
+        })
     }
-
+    ///Worker structs that we just created to fetch the code to run
+    ///from a queue held in the ThreadPool and send that code to its thread to run.
     pub fn execute<F>(&self, f: F)
     where
         F: FnOnce() + Send + 'static, //the closure will be executed only one time
@@ -49,22 +58,38 @@ impl ThreadPool {
     {
         let job = Box::new(f);
 
-        self.sender.send(job).unwrap();
+        self.sender.as_ref().unwrap().send(job).unwrap();
     }
 }
-struct Worker {
-    id: usize,
-    thread: thread::JoinHandle<()>,
-}
 
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        drop(self.sender.take());
+
+        for worker in self.workers.drain(..) {
+            println!("Shutting down worker {}", worker.id);
+
+            worker.thread.join().unwrap();
+        }
+    }
+}
 impl Worker {
+    ///The Arc type will let multiple Worker instances own the receiver,
+    ///and Mutex will ensure that only one Worker gets a job from the receiver at a time
     fn new(id: usize, receiver: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
         let thread = thread::spawn(move || loop {
-            let job = receiver.lock().unwrap().recv().unwrap();
+            let message = receiver.lock().unwrap().recv();
 
-            println!("Worker {id} got a job; executing.");
-
-            job();
+            match message {
+                Ok(job) => {
+                    println!("Worker {id} got a job; executing");
+                    job();
+                }
+                Err(_) => {
+                    println!("Worker{id} disconected; shutting down.");
+                    break;
+                }
+            }
         });
 
         Worker { id, thread }

@@ -19,7 +19,7 @@ use std::{
     time::Duration,
 };
 
-use web_server_made_rusty::{PoolCreationError, ThreadPool};
+use web_server_made_rusty::ThreadPool;
 
 const LCL_ADDR: &str = "127.0.0.1:7878";
 fn main() {
@@ -41,13 +41,15 @@ fn main() {
             ThreadPool::new(1).unwrap()
         }
     };
-    for stream in listener.incoming() {
+    for stream in listener.incoming().take(2) {
         let stream = stream.unwrap();
 
         pool.execute(|| {
             handle_connection(stream);
         });
     }
+
+    println!("Shutting down.");
 }
 
 fn handle_connection(mut stream: TcpStream) {
