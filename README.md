@@ -60,3 +60,7 @@ cd web_server_made_rusty
 
 This project is inspired by the final project in "The Rust Programming Language" book, customized to explore the intersection of aerospace logic and web networking.
 More is comming to improve starting from this projet.
+
+## Documentation
+The full technical documentation, including module definitions and protocol specifications, is automatically generated and hosted here:
+**[View Full API Documentation](https://sofiavldd2005.github.io/web_server_made_rusty/web_server_made_rusty/index.html)**
