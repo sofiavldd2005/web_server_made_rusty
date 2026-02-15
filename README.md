@@ -22,10 +22,11 @@ This project serves as way to learn a little about computer networks, while also
 
 3. **Concurrent Architecture (Thread Pooling)**
   1. This server, uses a Thread Pool to handle simultaneous requests.
-  2. The 
+  2. The : 
 ```Rust 
   Arc<Mutex<mpsc::Receiver>>
-```  Combining Atomic Reference Counting and Mutual Exclusion to safely distribute jobs accros worker threads without data races. I found this to be particular different from C( the lang i usually use at RED), especially the fact that the Mutex is automaticaly "Unlocked", whereas in C, i have to manualy unlock the mutex.
+```
+Combining Atomic Reference Counting and Mutual Exclusion to safely distribute jobs accros worker threads without data races. I found this to be particular different from C( the lang i usually use at RED), especially the fact that the Mutex is automaticaly "Unlocked", whereas in C, i have to manualy unlock the mutex.
   3. Using closures (`FnOnce`) and `Box` to pass tasks efficiently.
 
 ## The Project Structure (As of now ...)
