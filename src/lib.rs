@@ -1,3 +1,8 @@
+//! # Web Server Made Rusty
+//!
+//! This library provides a thread pool implementation designed for
+//! handling concurrent TCP connections, specifically tailored for
+//! learning the HTTP/1.1 protocol .
 use std::{
     sync::{mpsc, Arc, Mutex},
     thread,

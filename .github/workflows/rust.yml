@@ -1,4 +1,4 @@
-name: Rust
+name: Rust  Test and Deplou to GitHub Pages
 
 on:
   push:
@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 env:
   CARGO_TERM_COLOR: always
 
@@ -20,3 +24,14 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Generate Documentation
+      run: cargo doc --no-deps --document-private-items
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+    - name: Upload Artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        # Path to the generated docs
+        path: target/doc
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
